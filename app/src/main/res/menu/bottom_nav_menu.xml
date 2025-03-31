@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/departmentListFragment"
+        android:icon="@android:drawable/ic_menu_sort_by_size"
+        android:title="Department" />
+    <item
+        android:id="@+id/studentListFragment"
+        android:icon="@android:drawable/ic_menu_myplaces"
+        android:title="Student" />
+</menu>

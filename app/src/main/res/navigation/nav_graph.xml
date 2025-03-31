@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/departmentListFragment">
+
+    <fragment
+        android:id="@+id/departmentListFragment"
+        android:name="com.example.tlucontactdemo.view.fragment.DepartmentListFragment"
+        android:label="Departments"
+        tools:layout="@layout/fragment_department_list">
+        <action
+            android:id="@+id/action_departmentListFragment_to_studentListFragment"
+            app:destination="@id/studentListFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/studentListFragment"
+        android:name="com.example.tlucontactdemo.view.fragment.StudentListFragment"
+        android:label="Students"
+        tools:layout="@layout/fragment_student_list">
+        <argument
+            android:name="departmentId"
+            app:argType="integer"
+            android:defaultValue="-1" />
+    </fragment>
+</navigation>
