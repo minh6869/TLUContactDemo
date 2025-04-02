@@ -12,7 +12,6 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.tlucontactdemo.R;
-import com.example.tlucontactdemo.util.FirestoreInstance;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -34,7 +33,7 @@ public class LoginActivity extends AppCompatActivity {
         buttonLogin = findViewById(R.id.buttonLogin);
 
         mAuth = FirebaseAuth.getInstance();
-        db = FirestoreInstance.getInstance();
+        db = FirebaseFirestore.getInstance();
 
         buttonLogin.setOnClickListener(v -> loginUser());
     }
@@ -83,9 +82,7 @@ public class LoginActivity extends AppCompatActivity {
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful() && !task.getResult().isEmpty()) {
                         DocumentSnapshot document = task.getResult().getDocuments().get(0);
-
                         String email = document.getString("email");
-
                         loginWithEmail(email, password);
                     } else {
                         Toast.makeText(LoginActivity.this, "User not found", Toast.LENGTH_SHORT).show();
@@ -98,10 +95,10 @@ public class LoginActivity extends AppCompatActivity {
         db.collection("users").document(userId).get()
                 .addOnSuccessListener(documentSnapshot -> {
                     String role = documentSnapshot.getString("role");
-                    if ("user".equals(role)) {
-                        navigateToMainActivity("user");
-                    } else {
+                    if ("admin".equals(role)) {
                         navigateToMainActivity("admin");
+                    } else {
+                        navigateToMainActivity("user");
                     }
                 });
     }

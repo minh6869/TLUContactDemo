@@ -7,6 +7,10 @@ import androidx.lifecycle.MutableLiveData;
 
 import com.example.tlucontactdemo.model.Student;
 import com.example.tlucontactdemo.util.FirestoreInstance;
+import com.google.android.gms.tasks.Task;
+import com.google.android.gms.tasks.Tasks;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
@@ -30,18 +34,29 @@ public class StudentRepository {
         return instance;
     }
 
+    public void getDepartmentId(DocumentReference departmentRef, OnDepartmentIdReceived callback) {
+        if (departmentRef != null) {
+            departmentRef.get().addOnSuccessListener(departmentDoc -> {
+                if (departmentDoc.exists()) {
+                    int departmentId = departmentDoc.getLong("id").intValue();
+                    callback.onReceived(departmentId); // Gọi callback khi có dữ liệu
+                }
+            }).addOnFailureListener(e -> {
+                Log.w("DataRepository", "Error getting department data", e);
+            });
+        }
+    }
+
+    // Định nghĩa interface callback
+    public interface OnDepartmentIdReceived {
+        void onReceived(int departmentId);
+    }
+
     private void loadStudents() {
         List<Student> studentList = new ArrayList<>();
-        studentList.add(new Student(1, "Nguyen Van A", "SV001", "test@gmail.com", "0123456789", 1));
-        studentList.add(new Student(1, "Nguyen Van b", "SV001", "test@gmail.com", "0123456adsf789", 2));
+        List<Task<DocumentSnapshot>> taskList = new ArrayList<>();
 
-        studentList.add(new Student(1, "Nguyen Van Ac", "SV001", "test@gmail.com", "01234dafasd56789", 3));
 
-        studentList.add(new Student(1, "Nguyen Van Ad", "SV001", "test@gmail.com", "0123452232326789", 1));
-
-        studentList.add(new Student(1, "Nguyen Van Aa", "SV001", "test@gmail.com", "0123gadvcz456789", 3));
-
-        studentList.add(new Student(1, "Nguyen Van Adasf", "SV001", "test@gmail.com", "01234yjytj56789", 2));
         db.collection("students")
                 .get()
                 .addOnCompleteListener(task -> {
@@ -50,12 +65,30 @@ public class StudentRepository {
                         for (QueryDocumentSnapshot document : task.getResult()) {
                             int id = document.getLong("id").intValue();
                             String name = document.getString("name");
+                            Log.d("DataRepository", "Student name: " + name);
                             String studentId = document.getString("studentId");
                             String email = document.getString("email");
                             String phone = document.getString("phone");
-                            int departmentId = document.getLong("departmentId").intValue();
-                            Log.d("DataRepository", "Student: " + name + ", ID: " + id);
-                            studentList.add(new Student(id, name, studentId, email, phone, departmentId));
+                            DocumentReference departmentRef = document.getDocumentReference("departmentId");
+
+
+                            if (departmentRef != null) {
+                                // Lưu lại Task truy vấn department
+                                Task<DocumentSnapshot> departmentTask = departmentRef.get();
+                                taskList.add(departmentTask);
+
+                                departmentTask.addOnSuccessListener(departmentDoc -> {
+                                    int departmentId = departmentDoc.getLong("id").intValue();
+                                    studentList.add(new Student(id, name, studentId, email, phone, departmentId));
+                                });
+                            }
+                            Tasks.whenAllComplete(taskList).addOnCompleteListener(task1 -> {
+                                Log.d("DataRepository", "All students loaded: " + studentList.size());
+                                // Ở đây bạn có thể cập nhật UI hoặc xử lý tiếp
+
+                            });
+
+
                         }
                     } else {
                         // Xử lý lỗi
